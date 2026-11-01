@@ -219,12 +219,12 @@ With fewer SUE observations and a retail-heavy options market, the evidence for 
 
 **How many variants were tried.**
 - The main specification was fixed in the plan before any result was seen.
-- Five variants were run beside it, each changing one choice (`results/sensitivity.csv`):
+- Six variants were run beside it, each changing one choice (`results/sensitivity.csv`):
   - the minimum contracts per option (1 and 20 instead of 5);
   - settle prices instead of closes;
+  - a smile fitted to premium errors instead of IV errors;
   - P/C in notional value instead of contracts;
   - the alternative SUE, scaled by the standard deviation of year-on-year changes, which needs 12 quarters instead of 20.
-- A sixth, a smile fitted to premium errors instead of IV errors, is far slower to build and is still running. It will be added when it finishes.
 - The trading test ran 3 signals × 2 periods × 2 cost settings.
 - No variant was chosen for its result.
 
@@ -235,6 +235,7 @@ With fewer SUE observations and a retail-heavy options market, the evidence for 
 | main, alternative SUE | 2,072 | 1,555 | +0.026 (6.44) | 2.94 (2.52; 2.07) | -0.97 (-4.88) | -0.36 (-0.68) | 3.35 (2.63) | 2.06 (1.57) | 3.75 (2.87) |
 | at least 1 contract | 2,361 | 1,422 | +0.025 (5.17) | 1.41 (1.57; 1.38) | -0.84 (-4.82) | -0.28 (-0.58) | 1.14 (1.17) | 1.53 (1.51) | 4.63 (4.15) |
 | at least 20 contracts | 1,662 | 1,045 | +0.030 (6.18) | 4.74 (3.28; 2.68) | -0.87 (-3.66) | -0.50 (-0.82) | 4.05 (2.35) | 2.24 (1.29) | 6.07 (3.84) |
+| premium-error fit | 2,072 | 1,275 | +0.030 | 4.05 (3.26; 2.79) | -0.77 (-3.81) | -0.93 | 2.90 | 2.61 | 3.09 |
 | settle prices | 2,072 | 1,275 | +0.025 (5.90) | 3.40 (2.88; 2.38) | -0.79 (-3.94) | -0.40 (-0.75) | 3.01 (2.40) | 2.97 (2.28) | 4.49 (3.46) |
 
 **What the variants show.**
