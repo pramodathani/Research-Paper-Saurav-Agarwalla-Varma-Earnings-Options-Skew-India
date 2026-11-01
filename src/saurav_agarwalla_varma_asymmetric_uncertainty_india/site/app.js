@@ -168,10 +168,14 @@ function chart(id) {
   return charts[id];
 }
 
+function narrow() {
+  return window.innerWidth < 600;
+}
+
 function baseOption() {
   return {
     textStyle: { fontFamily: FONT, fontSize: 13, color: COLOURS.dark },
-    grid: { left: 52, right: 18, top: 40, bottom: 42 },
+    grid: { left: 52, right: 18, top: narrow() ? 64 : 40, bottom: 42 },
     legend: { top: 0, itemGap: 28, textStyle: { fontFamily: FONT, fontSize: 13 } },
     tooltip: { trigger: 'axis', axisPointer: { type: 'cross' }, textStyle: { fontFamily: FONT } },
   };
@@ -247,8 +251,8 @@ function drawFigureFour(run) {
   const labels = offsets.map((o) => (o > 0 ? `+${o}` : String(o)));
   const option = baseOption();
   option.grid = [
-    { left: 52, right: 18, top: 40, height: '30%' },
-    { left: 52, right: 18, top: '58%', height: '30%' },
+    { left: 52, right: 18, top: 50, height: '31%' },
+    { left: 52, right: 18, top: '56%', height: '31%' },
   ];
   option.xAxis = [
     { type: 'category', data: labels, gridIndex: 0, axisTick: { show: false } },
@@ -331,7 +335,7 @@ function drawTableFour(run) {
   const head = '<thead><tr><th>Correlation with SUE</th><th>Day −1</th><th>Day −2</th><th>Day −3</th></tr></thead>';
   const body = ['rr', 'atm', 'pc'].map((k) => {
     const variable = (n) => (k === 'pc' ? `pc_contracts_${n}` : `${k}_iv_${n}`);
-    const ours = `<tr class="group-start"><th>${names[k]}</th>${[1, 2, 3].map((n) => `<td${negativeClass(lookup[variable(n)])}>${fmt(lookup[variable(n)], 3)}</td>`).join('')}</tr>`;
+    const ours = `<tr class="group-start"><th>${names[k]}</th>${[1, 2, 3].map((n) => `<td>${fmt(lookup[variable(n)], 3)}</td>`).join('')}</tr>`;
     const paper = state.sample === 'main'
       ? `<tr><th class="paper">&nbsp;&nbsp;paper</th>${[1, 2, 3].map((n) => `<td class="paper">${fmt(snapshot.paper.table_4[variable(n)], 3)}</td>`).join('')}</tr>`
       : '';
@@ -346,7 +350,7 @@ function regressionCell(row) {
   }
   const t = state.se === 'classical' ? row.t_statistic : row.clustered_t_statistic;
   const beneath = state.se === 'classical' ? `(${fmt(row.standard_error, 3)})` : `[${fmt(row.clustered_t_statistic, 2)}]`;
-  return `<td${negativeClass(row.coefficient)}>${fmt(row.coefficient, 3)}${stars(t)}<span class="t">${beneath}</span></td>`;
+  return `<td>${fmt(row.coefficient, 3)}${stars(t)}<span class="t">${beneath}</span></td>`;
 }
 
 function paperCell(table, column, variable) {
@@ -398,7 +402,7 @@ function drawRegressions(run) {
 
 function drawSensitivity() {
   const head = '<thead><tr><th>Variant (2015–2019)</th><th>Events</th><th>SUE events</th><th>ATM-IV EA − pre</th><th>RR-IV</th><th>P/C</th><th>ATM-IV</th><th>RR-IV n = 2</th><th>RR-IV n = 3</th><th>Alt RR-IV</th></tr></thead>';
-  const pair = (value, t) => `<td${negativeClass(value)}>${fmt(value, 2)}${stars(t)}<span class="t">(${fmt(t, 2)})</span></td>`;
+  const pair = (value, t) => `<td>${fmt(value, 2)}${stars(t)}<span class="t">(${fmt(t, 2)})</span></td>`;
   const body = snapshot.sensitivity.map((r) => `<tr><th>${r.variant}</th><td>${Math.round(r.events).toLocaleString('en-IN')}</td><td>${Math.round(r.observations).toLocaleString('en-IN')}</td>`
     + `<td>${fmt(r.atm_ea_minus_pre, 3)}<span class="t">(${fmt(r.atm_t_welch, 2)})</span></td>`
     + pair(r.t6_rr_coefficient, r.t6_rr_t) + pair(r.t6_pc_coefficient, r.t6_pc_t) + pair(r.t6_atm_coefficient, r.t6_atm_t)
@@ -412,6 +416,18 @@ function drawSensitivity() {
 function tradingRow(signal, period, costs) {
   const name = costs === 'gross' ? 'STT 0.01% (rate in force to Sep 2024)' : costs;
   return snapshot.trading.summary.find((r) => r.signal === signal && r.period === period && r.costs === name);
+}
+
+function yearAxis(dates) {
+  return {
+    type: 'category',
+    data: dates,
+    axisTick: { show: false },
+    axisLabel: {
+      interval: (index) => index === 0 || dates[index].slice(0, 4) !== dates[index - 1].slice(0, 4),
+      formatter: (v) => v.slice(0, 4),
+    },
+  };
 }
 
 function wealthAndDrawdown(values) {
@@ -444,12 +460,12 @@ function drawTrading() {
   const values = gross ? lines.gross : lines[state.costs];
   const curves = wealthAndDrawdown(values);
   const growth = baseOption();
-  growth.xAxis = { type: 'category', data: daily.dates, axisLabel: { formatter: (v) => v.slice(0, 4) }, axisTick: { show: false } };
+  growth.xAxis = yearAxis(daily.dates);
   growth.yAxis = valueAxis(2);
   growth.series = [line(gross ? 'Before costs' : 'After costs', curves.growth, gross ? COLOURS.blue : COLOURS.red, 1.5)];
   chart('chart-trade-growth').setOption(growth, true);
   const drawdown = baseOption();
-  drawdown.xAxis = { type: 'category', data: daily.dates, axisLabel: { formatter: (v) => v.slice(0, 4) }, axisTick: { show: false } };
+  drawdown.xAxis = yearAxis(daily.dates);
   drawdown.yAxis = { type: 'value', axisLabel: { formatter: (v) => `${Math.round(v * 100)}%` }, splitLine: { lineStyle: { color: '#e8eaed' } } };
   drawdown.legend.show = false;
   drawdown.series = [{ ...line('Drawdown', curves.drawdown, COLOURS.red, 1), areaStyle: { color: 'rgba(234,67,53,0.18)' } }];

@@ -473,3 +473,22 @@ th.paper {
   margin: 4px 0 14px;
   text-align: left;
 }
+
+.controls label {
+  min-width: 0;
+}
+
+.controls select {
+  width: 100%;
+  min-width: 0;
+}
+
+.chart.double {
+  height: 460px;
+}
+
+@media (max-width: 600px) {
+  .chart.double {
+    height: 480px;
+  }
+}
