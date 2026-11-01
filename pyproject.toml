@@ -37,6 +37,9 @@ dependencies = [
 test = [
     "pytest",
 ]
+figures = [
+    "matplotlib",
+]
 live = [
     "tradingmachine",
 ]
