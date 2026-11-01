@@ -40,6 +40,9 @@ test = [
 figures = [
     "matplotlib",
 ]
+backtest = [
+    "data-and-analytics",
+]
 live = [
     "tradingmachine",
 ]
