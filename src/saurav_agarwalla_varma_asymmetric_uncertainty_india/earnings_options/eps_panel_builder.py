@@ -128,11 +128,59 @@ class EpsPanelBuilder:
             pieces.append(group.reset_index())
         return pandas.concat(pieces, ignore_index=True)
 
-    def build(self, ranges_path: pathlib.Path) -> pandas.DataFrame:
+    def use_announcement_times(
+        self,
+        panel: pandas.DataFrame,
+        announcements: pandas.DataFrame,
+    ) -> pandas.DataFrame:
+        """Replaces the results API's broadcast time by the announcement time.
+
+        The results API time is the time of the structured filing, which can
+        come weeks after the results were announced. The announcement of the
+        results on NSE's announcement feed is what the paper dates events by.
+        An announcement is used when it is for the same symbol and period, is
+        not before the period ended and is not more than a day after the
+        structured filing. Otherwise the API time is kept.
+
+        Args:
+            panel: Rows with symbol, period_end and broadcast.
+            announcements: One row per symbol and period end with announced.
+
+        Returns:
+            The panel with broadcast replaced where an announcement matched,
+            results_broadcast holding the original and time_source saying
+            which was used.
+        """
+        merged = panel.merge(
+            announcements[['symbol', 'period_end', 'announced']],
+            on=['symbol', 'period_end'],
+            how='left',
+        )
+        merged['results_broadcast'] = merged['broadcast']
+        late = merged['announced'] > merged['broadcast'] + pandas.Timedelta(
+            days=1
+        )
+        early = merged['announced'] < merged['period_end']
+        usable = merged['announced'].notna() & ~late & ~early
+        merged['broadcast'] = merged['announced'].where(
+            usable, merged['broadcast']
+        )
+        merged['time_source'] = usable.map(
+            {True: 'announcement', False: 'results_api'},
+        )
+        return merged.drop(columns=['announced'])
+
+    def build(
+        self,
+        ranges_path: pathlib.Path,
+        announcements: pandas.DataFrame | None = None,
+    ) -> pandas.DataFrame:
         """Builds the panel for every stock-futures share.
 
         Args:
             ranges_path: The JSON of futures date ranges by symbol.
+            announcements: The first results announcement of each symbol
+                and period, or None to keep the results API times.
 
         Returns:
             One row per symbol and quarter with the first broadcast time,
@@ -180,6 +228,8 @@ class EpsPanelBuilder:
             2009,
             2026,
         )
+        if announcements is not None:
+            panel = self.use_announcement_times(panel, announcements)
         factor = self.adjustment_factors(panel, actions)
         panel['adjusted_eps'] = panel['eps'] * factor
         return self.sue_table(panel)
