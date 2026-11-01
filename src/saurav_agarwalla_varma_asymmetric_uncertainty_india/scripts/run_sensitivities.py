@@ -57,6 +57,9 @@ class RunSensitivitiesApplication:
         summary = sensitivity_summary.SensitivitySummary()
         rows = []
         for name, file_name in self.SMILE_VARIANTS:
+            if not (derived / file_name).exists():
+                print('skipped, panel not built yet:', name, flush=True)
+                continue
             inputs = study_runner.StudyInputs(
                 smile=pandas.read_parquet(derived / file_name),
                 **shared,
