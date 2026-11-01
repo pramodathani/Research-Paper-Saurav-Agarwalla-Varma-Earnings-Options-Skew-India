@@ -11,7 +11,7 @@ class BuildDerivedStoresApplication:
     """Command-line program that builds the yearly stores."""
 
     def run(self) -> None:
-        """Builds the F&O stores for 2014 to 2025 and cash for 2009 to 2025.
+        """Builds the F&O stores for 2009 to 2025 and cash for 2009 to 2025.
 
         Raises:
             FileNotFoundError: If the raw data folder is missing.
@@ -19,7 +19,7 @@ class BuildDerivedStoresApplication:
         builder = derived_store_builder.DerivedStoreBuilder(
             pathlib.Path('data'),
         )
-        builder.build('fno', 2014, 2025)
+        builder.build('fno', 2009, 2025)
         builder.build('cash', 2009, 2025)
 
 
