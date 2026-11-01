@@ -1,0 +1,61 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "saurav-agarwalla-varma-asymmetric-uncertainty-india"
+version = "2026.11.01"
+description = "Saurav, Agarwalla and Varma (2024) Asymmetric Uncertainty Around Earnings Announcements, recreated for NSE stock options."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.14"
+authors = [
+    { name = "Pramod Athani", email = "pramod.athani@gmail.com" },
+]
+keywords = [
+    "earnings announcements",
+    "implied volatility",
+    "volatility smile",
+    "risk reversal",
+    "put-call ratio",
+    "informed trading",
+    "stock options",
+    "NSE",
+    "India",
+    "replication",
+]
+dependencies = [
+    "numpy",
+    "pandas",
+    "pyarrow",
+    "scipy",
+    "statsmodels",
+    "requests",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+]
+live = [
+    "tradingmachine",
+]
+
+[project.scripts]
+au-india-app = "saurav_agarwalla_varma_asymmetric_uncertainty_india.site_server:SiteServerApplication.main"
+
+[tool.hatch.build.targets.wheel]
+packages = [
+    "src/saurav_agarwalla_varma_asymmetric_uncertainty_india",
+]
+
+[tool.ruff]
+line-length = 80
+
+[tool.ruff.format]
+quote-style = "single"
+
+[tool.pytest.ini_options]
+testpaths = [
+    "tests",
+]

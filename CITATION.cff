@@ -1,0 +1,30 @@
+cff-version: 1.2.0
+message: "If you use this replication, please cite it as below, and cite the original paper."
+title: "Asymmetric Uncertainty Around Earnings Announcements: a recreation for NSE stock options"
+authors:
+  - family-names: Athani
+    given-names: Pramod
+    email: pramod.athani@gmail.com
+    orcid: "https://orcid.org/0009-0002-0270-7045"
+    website: "https://www.linkedin.com/in/pramod-athani-b65b922a/"
+repository-code: "https://github.com/pramodathani/Research-Paper-Saurav-Agarwalla-Varma-Earnings-Options-Skew-India"
+license: MIT
+version: 0.1.0
+date-released: 2026-11-01
+references:
+  - type: article
+    authors:
+      - family-names: Saurav
+        given-names: Sumit
+      - family-names: Agarwalla
+        given-names: Sobhesh Kumar
+      - family-names: Varma
+        given-names: Jayanth R.
+    title: "Asymmetric Uncertainty Around Earnings Announcements: Evidence from Options Markets"
+    journal: "American Business Review"
+    volume: 27
+    issue: 2
+    start: 459
+    end: 487
+    year: 2024
+    doi: "10.37625/abr.27.2.459-487"
