@@ -29,6 +29,8 @@ class AnnouncementReader:
         '%d-%m-%Y',
         '%b. %d, %Y',
     )
+    MONTH_FORMATS = ('%B %Y', '%b %Y', '%B, %Y', '%B-%Y', '%b-%Y')
+    RESULT_TEXT = re.compile(r'financial\s+(?:result|statement)', re.IGNORECASE)
 
     def parse_period(self, text: str | None) -> datetime.date | None:
         """Finds the period-end date in an announcement's text.
@@ -52,7 +54,47 @@ class AnnouncementReader:
                     return datetime.datetime.strptime(piece, pattern).date()
                 except ValueError:
                     continue
+            for pattern in self.MONTH_FORMATS:
+                try:
+                    first = datetime.datetime.strptime(piece, pattern).date()
+                except ValueError:
+                    continue
+                return self.month_end(first)
         return None
+
+    def month_end(self, date: datetime.date) -> datetime.date:
+        """Returns the last day of a date's month.
+
+        Args:
+            date: Any date in the month.
+
+        Returns:
+            The month's last day.
+        """
+        following = (date.replace(day=1) + datetime.timedelta(days=32)).replace(
+            day=1,
+        )
+        return following - datetime.timedelta(days=1)
+
+    def is_result_announcement(
+        self, description: str, text: str | None
+    ) -> bool:
+        """Says whether an announcement is about a set of results.
+
+        Args:
+            description: NSE's category of the announcement.
+            text: The announcement's text.
+
+        Returns:
+            True for a financial result update, and for a board outcome whose
+            text says it considered financial results or statements.
+        """
+        description = description.lower()
+        if 'financial result' in description:
+            return True
+        if 'outcome of board' in description and text:
+            return self.RESULT_TEXT.search(text) is not None
+        return False
 
     def read_folder(self, folder: pathlib.Path) -> pandas.DataFrame:
         """Reads every saved file and keeps the financial result updates.
@@ -66,8 +108,11 @@ class AnnouncementReader:
         rows = []
         for path in sorted(folder.glob('*.json')):
             for item in json.loads(path.read_text()):
-                description = (item.get('desc') or '').lower()
-                if 'financial result' not in description:
+                description = item.get('desc') or ''
+                if not self.is_result_announcement(
+                    description,
+                    item.get('text'),
+                ):
                     continue
                 try:
                     announced = pandas.to_datetime(

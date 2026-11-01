@@ -51,6 +51,42 @@ class AnnouncementReaderTest(unittest.TestCase):
                 datetime.date(*expected),
             )
 
+    def test_month_and_year_only_gives_the_month_end(self) -> None:
+        """Checks the 2022 wording 'period ended September 2022'.
+
+        Raises:
+            AssertionError: If the date is wrong.
+        """
+        text = (
+            'Board Meeting held on 13-Oct-2022 to consider financial '
+            'statements for the period ended September 2022, Buyback'
+        )
+        self.assertEqual(
+            self.reader.parse_period(text),
+            datetime.date(2022, 9, 30),
+        )
+        text = 'results for the period ended February 2024'
+        self.assertEqual(
+            self.reader.parse_period(text),
+            datetime.date(2024, 2, 29),
+        )
+
+    def test_board_outcomes_count_only_when_they_mention_results(self) -> None:
+        """Checks which board outcomes are taken as result announcements.
+
+        Raises:
+            AssertionError: If a classification is wrong.
+        """
+        check = self.reader.is_result_announcement
+        self.assertTrue(check('Financial Result Updates', None))
+        self.assertTrue(
+            check('Outcome of Board Meeting', 'to consider financial results'),
+        )
+        self.assertFalse(
+            check('Outcome of Board Meeting', 'allotment of shares'),
+        )
+        self.assertFalse(check('Press Release', 'financial results'))
+
     def test_text_without_a_period_gives_none(self) -> None:
         """Checks missing and unreadable text gives None.
 
