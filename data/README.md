@@ -14,6 +14,7 @@ The bhavcopy, F&O, corporate action, results-announcement, IIMA, symbol-change a
 | `nse/corporate_actions/` | NSE corporate actions API, one JSON per year (splits, bonuses, dividends) | `nseindia.com/api/corporates-corporateActions` | 2000 to 2026 | 27 files |
 | `nse/results_dates/` | NSE financial results API, one JSON per quarter: broadcast time, period, consolidated flag, link to the filing | `nseindia.com/api/corporates-financial-results` | 2007 Q1 to 2026 Q4 | 80 files |
 | `nse/results_filings/` | The filings themselves, standalone quarterly results of the stock-futures shares, named `SYMBOL__period-end__NSE-file`. Source of EPS before extraordinary items, face value and paid-up capital | The HTML or XBRL link in each `results_dates` row, fetched 2026-11-01 | broadcasts 2010-01 to 2025-04 | 13,435 targets: 13,032 downloaded (7,157 HTML, 5,875 XBRL), 340 with no link, 60 not served, 3 duplicate file names (see below) |
+| `nse/announcements/` | NSE corporate announcements about results and board outcomes, two years per file, named `SYMBOL__first_last.json`. The 'Financial Result Updates' rows carry the true announcement time and the period | `nseindia.com/api/corporate-announcements` (index equities), fetched 2026-11-01 | 2014 to 2025 | 3,030 files, 505 symbols, none failed |
 | `nse/iima/` | IIMA four-factor monthly file with RF (risk-free, percent), survivorship-bias adjusted, release 2025-12 | `faculty.iima.ac.in/iffm/...` | 1993-10 to 2025-12 | 1 file, 387 months |
 | `nse/symbol_changes/symbolchange.csv` | NSE list of symbol renames | `nsearchives.nseindia.com/content/equities/symbolchange.csv` | 2026-10-31 snapshot | 1,078 rows |
 | `niftyindices/total_return/` | NIFTY 500 and other total-return index levels, five-year JSON chunks | niftyindices.com | 1995 to 2026-10-30 | 8 indices |
@@ -32,6 +33,18 @@ The bhavcopy, F&O, corporate action, results-announcement, IIMA, symbol-change a
 | 2016 | 951 | 942 | 2023 | 998 | 998 |
 | 2017 | 802 | 718 | 2024 | 1,064 | 1,064 |
 
+## Derived files (`derived/`, built by the scripts)
+
+| File | What | Script |
+|---|---|---|
+| `fno_YYYY.parquet`, `cash_YYYY.parquet` (2009-2025) | The bhavcopies in one normalised layout, traded stock futures and options only | `build_derived_stores.py` |
+| `futures_ranges.json` | First date, last date and days of stock futures for each of 505 symbols | `build_futures_ranges.py` |
+| `eps_panel.parquet` | One row per share and quarter: announcement time, EPS, shares, SUE | `build_eps_panel.py` |
+| `events.parquet` | Every announcement with day 0, expiry and the reason it was dropped | `build_events.py` |
+| `smile_main_2014_2025.parquet` | One smile per stock-day on the near-month series (454,721 stock-days) | `build_smile_panel.py` |
+| `volume_ratios_2014_2025.parquet` | Daily O/S, O/F and P/C per share (521,237 rows) | `build_volume_ratios.py` |
+| `daily_returns_2009_2025.parquet` | Adjusted daily returns (1,544,002 rows, 75 moves flagged as extreme) | `build_daily_returns.py` |
+
 ## Known problems
 
 1. **No derivatives history in UBI** (gaps 36 and 37). The smile uses NSE's daily F&O bhavcopy instead of time-matched trades, so option and futures closes are not synchronous.
@@ -42,3 +55,4 @@ The bhavcopy, F&O, corporate action, results-announcement, IIMA, symbol-change a
 6. **UBI prices are only a cross-check.** Daily history starts 2019-12-03 and has split and bonus errors (gap 32). Returns come from NSE bhavcopies adjusted with NSE's corporate action list.
 7. **Delisted shares** are in the NSE files. Their final-trade losses are not recorded.
 8. **Futures symbols and cash symbols can differ** after renames; `symbol_changes` links them in the Build stage.
+9. **The results API's broadcast time is not the announcement time.** It is the time of the structured filing, a median of one day and up to 576 days later (mean 6 days). Events are dated from the announcement feed, which matched 8,626 of 12,182 quarters: over 99% in every year of 2014-2021 and 2023-2025, but only 52% in 2022, so the extension needs a second look. Unmatched quarters keep the API time.
