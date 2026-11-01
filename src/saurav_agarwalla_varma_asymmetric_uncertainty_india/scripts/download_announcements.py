@@ -1,5 +1,6 @@
 """Downloads results announcements for every stock-futures share."""
 
+import argparse
 import json
 import pathlib
 
@@ -17,11 +18,15 @@ class DownloadAnnouncementsApplication:
         Raises:
             FileNotFoundError: If the futures ranges file is missing.
         """
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--shard', type=int, default=0)
+        parser.add_argument('--shards', type=int, default=1)
+        arguments = parser.parse_args()
         data_folder = pathlib.Path('data')
         ranges = json.loads(
             (data_folder / 'derived' / 'futures_ranges.json').read_text(),
         )
-        symbols = sorted(ranges)
+        symbols = sorted(ranges)[arguments.shard :: arguments.shards]
         downloader = announcement_downloader.AnnouncementDownloader(
             data_folder / 'nse' / 'announcements',
         )
