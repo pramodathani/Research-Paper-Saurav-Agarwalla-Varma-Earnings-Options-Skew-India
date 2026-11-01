@@ -88,6 +88,7 @@ class RunTradingTestApplication:
             ),
         }
         rows = []
+        daily = []
         for signal, percentile in test.signals().items():
             direction = test.positions(percentile)
             for period, first, last in self.PERIODS:
@@ -101,6 +102,11 @@ class RunTradingTestApplication:
                         first,
                         last,
                     )
+                    frame = result.daily.reset_index(names='date')
+                    frame.insert(0, 'costs', cost_name)
+                    frame.insert(0, 'period', period)
+                    frame.insert(0, 'signal', signal)
+                    daily.append(frame)
                     rows.append(
                         {
                             'signal': signal,
@@ -126,6 +132,11 @@ class RunTradingTestApplication:
                     )
         table = pandas.DataFrame(rows)
         table.to_csv(pathlib.Path('results') / 'trading_test.csv', index=False)
+        pandas.concat(daily, ignore_index=True).to_csv(
+            pathlib.Path('results') / 'trading_test_daily.csv',
+            index=False,
+            float_format='%.6g',
+        )
         print(table.round(4).to_string())
 
 

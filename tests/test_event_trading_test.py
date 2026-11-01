@@ -163,6 +163,11 @@ class EventTradingTestTest(unittest.TestCase):
         self.assertGreater(result.round_trip_cost, 0.002)
         self.assertLess(result.round_trip_cost, 0.004)
         self.assertEqual(result.gross['periods'], 12)
+        self.assertEqual(len(result.daily), 12)
+        self.assertAlmostEqual(
+            float(result.daily['gross'].sum()),
+            0.02 * (0.035 + 0.025 + 0.025 + 0.035),
+        )
         self.assertIsInstance(datetime.date(2017, 1, 1), datetime.date)
 
 

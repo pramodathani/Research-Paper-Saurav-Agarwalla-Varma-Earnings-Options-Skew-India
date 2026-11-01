@@ -24,6 +24,8 @@ class TradingResult:
         hit_rate: The share of trades that made money before costs.
         gross: Performance of the daily return series before costs.
         net: Performance of the daily return series after costs.
+        daily: Daily gross and net returns on every trading day of the
+            period, zero on days without a trade.
         round_trip_cost: The mean cost of one round trip, as a fraction.
     """
 
@@ -35,6 +37,7 @@ class TradingResult:
     gross: dict
     net: dict
     round_trip_cost: float
+    daily: pandas.DataFrame
 
 
 class EventTradingTest:
@@ -223,6 +226,12 @@ class EventTradingTest:
             gross=gross,
             net=net,
             round_trip_cost=round_trip,
+            daily=pandas.DataFrame(
+                {
+                    'gross': result.gross_returns.reindex(dates).fillna(0.0),
+                    'net': result.net_returns.reindex(dates).fillna(0.0),
+                },
+            ),
         )
 
     def score(self, returns: pandas.Series, dates: list) -> dict:

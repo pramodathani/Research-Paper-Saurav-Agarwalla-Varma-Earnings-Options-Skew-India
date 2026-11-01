@@ -18,11 +18,19 @@ class RunSensitivitiesApplication:
     """Command-line program that runs the sensitivity analysis."""
 
     SMILE_VARIANTS = (
-        ('main (5 contracts, IV error, close)', 'smile_main_2014_2025.parquet'),
-        ('at least 1 contract', 'smile_c1_2014_2020.parquet'),
-        ('at least 20 contracts', 'smile_c20_2014_2020.parquet'),
-        ('premium-error fit', 'smile_priceerror_2014_2020.parquet'),
-        ('settle prices', 'smile_settle_2014_2020.parquet'),
+        (
+            'main (5 contracts, IV error, close)',
+            'smile_main_2014_2025.parquet',
+            'main',
+        ),
+        ('at least 1 contract', 'smile_c1_2014_2020.parquet', 'c1'),
+        ('at least 20 contracts', 'smile_c20_2014_2020.parquet', 'c20'),
+        (
+            'premium-error fit',
+            'smile_priceerror_2014_2020.parquet',
+            'priceerror',
+        ),
+        ('settle prices', 'smile_settle_2014_2020.parquet', 'settle'),
     )
 
     def run(self) -> None:
@@ -56,7 +64,7 @@ class RunSensitivitiesApplication:
         }
         summary = sensitivity_summary.SensitivitySummary()
         rows = []
-        for name, file_name in self.SMILE_VARIANTS:
+        for name, file_name, key in self.SMILE_VARIANTS:
             if not (derived / file_name).exists():
                 print('skipped, panel not built yet:', name, flush=True)
                 continue
@@ -66,6 +74,8 @@ class RunSensitivitiesApplication:
             )
             results = study_runner.StudyRunner(inputs).run()
             rows.append(summary.row(name, results))
+            if key != 'main':
+                self.save(results, pathlib.Path('results') / 'variants' / key)
             print(name, flush=True)
             if file_name.startswith('smile_main'):
                 rows.append(
@@ -86,6 +96,23 @@ class RunSensitivitiesApplication:
         target = pathlib.Path('results') / 'sensitivity.csv'
         table.to_csv(target, index=False)
         print(table.round(3).T.to_string())
+
+    def save(
+        self,
+        results: dict[str, pandas.DataFrame],
+        folder: pathlib.Path,
+    ) -> None:
+        """Saves a variant's derived result tables, without the event rows.
+
+        Args:
+            results: The result tables of one run.
+            folder: Where to write them.
+        """
+        folder.mkdir(parents=True, exist_ok=True)
+        for name, table in results.items():
+            if name in ('events', 'dataset'):
+                continue
+            table.to_csv(folder / f'{name}.csv', index=False)
 
 
 if __name__ == '__main__':
