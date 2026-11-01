@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Asymmetric Uncertainty Around Earnings in India: Saurav, Agarwalla and Varma (2024) Recreated from Free NSE Data</title>
+<meta name="description" content="Implied volatility, the options skew and option volume around earnings announcements of NSE stocks with derivatives, 2015-2019 and 2020-2025, recreated from free daily NSE files. The skew and the put-to-call ratio predict the earnings surprise, as the paper finds, but the price has already absorbed it, so the signal cannot be traded.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tinos:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+
+<h1>Asymmetric Uncertainty Around Earnings Announcements in India</h1>
+<p class="subtitle">Saurav, Agarwalla and Varma (2024) recreated from free NSE data, 2015 to 2025</p>
+<p class="author">Pramod Athani</p>
+<p class="author-links">
+<a href="mailto:pramod.athani@gmail.com">pramod.athani@gmail.com</a> &middot;
+<a href="https://orcid.org/0009-0002-0270-7045">ORCID 0009-0002-0270-7045</a> &middot;
+<a href="https://papers.ssrn.com/sol3/cf_dev/AbsByAuth.cfm?per_id=13497529">SSRN 13497529</a> &middot;
+<a href="https://www.linkedin.com/in/pramod-athani-b65b922a/">LinkedIn</a>
+</p>
+<p class="date-line">November 2026 &middot; events from January 2015 to March 2025</p>
+<div class="colour-bar"><span style="background:#4285f4"></span><span style="background:#ea4335"></span><span style="background:#fbbc05"></span><span style="background:#34a853"></span></div>
+
+<section class="abstract">
+<h2>Abstract</h2>
+<p>Saurav, Agarwalla and Varma (2024) show that in India's single-stock options market, implied volatility and the options skew build up before quarterly earnings announcements and fall after them, that option volume rises relative to stock and futures volume, and that the skew and the put-to-call volume ratio one day before an announcement predict the sign of the earnings surprise. I recreate the part of their study that does not need paid data, building every volatility smile from NSE's free daily F&amp;O bhavcopy instead of tick data, dating announcements from NSE's announcement feed, and measuring the surprise by standardised unexpected earnings (SUE) from NSE's results filings. For 2,072 announcements from 2015 to 2019 the paper's findings hold: at-the-money implied volatility is 0.026 higher in the announcement month (<i>t</i> = 6.4; the paper reports 0.028), the skew the day before correlates 0.163 with SUE (the paper: 0.162), and in the paper's regression the skew and the put-to-call ratio are significant at the 1% level while the level of implied volatility is not. The skew's strength depends on how liquid the options are, as daily-close noise would make it. But the information is already in the stock price by the close of the day before: going long or short the stock future on these signals until the announcement day loses money even before costs. From 2020 to 2025 the skew no longer predicts the surprise.</p>
+<p class="keywords"><b>Keywords:</b> earnings announcements, implied volatility, volatility smile, risk reversal, put-call ratio, informed trading, India, NSE, replication.<br><b>JEL codes:</b> G13, G14.</p>
+</section>
+
+<div class="citation">
+<p id="citation-text">Athani, P. (2026). Asymmetric Uncertainty Around Earnings Announcements in India: Saurav, Agarwalla and Varma (2024) Recreated from Free NSE Data. https://tradingmachine.co.in/papers/saurav-agarwalla-varma-earnings-options-skew-india/</p>
+<button id="copy-citation" type="button">Copy</button>
+</div>
+
+<ul class="key-findings">
+<li><b>Uncertainty builds up before earnings and is resolved by them.</b> At-the-money implied volatility climbs to 26% above its level of the month before by the eve of the announcement and falls back sharply on the day.</li>
+<li><b>Option trading surges into the announcement</b>, relative to both the stock and its futures, and peaks on the announcement day.</li>
+<li><b>The skew and the put-to-call ratio forecast the surprise; the level of volatility does not</b>, exactly as the paper reports, and more strongly when only liquid options are used.</li>
+<li><b>It is not a trade.</b> The forecast is of the accounting surprise, which the price has already absorbed by the close of the day before.</li>
+<li><b>After 2019 the effect fades</b>, as option volume grows several-fold.</li>
+</ul>
+
+<h2>1. Introduction</h2>
+<p>Before a company reports its quarterly results nobody knows the number, and the options market prices two things about that unknown: how far the share may move, which shows in at-the-money implied volatility (ATM-IV), and in which direction it is more likely to move, which shows in the slope of the volatility smile. Saurav, Agarwalla and Varma (2024) measure the slope by a risk reversal, RR-IV, the implied volatility of a call with delta 0.25 minus that of a call with delta 0.75; it is negative when out-of-the-money puts are dearer than out-of-the-money calls. Studying every earnings announcement from 2015 to 2019 by Indian firms with stock derivatives, they find that the whole smile rises before the announcement and falls after it, that option trading rises relative to trading in the stock and in its futures, and that RR-IV and the put-to-call volume ratio (P/C) one day before the announcement predict whether the surprise will be good or bad. They read this as informed trading in options close to the event and suggest that regulators watch the skew.</p>
+<p>The paper's data are paid: trade-by-trade option and futures prices from NSE, company data from CMIE Prowess and analyst forecasts from IBES. This page asks how much of the study can be rebuilt from free files, and whether the result is something one could trade. Every figure and table marked <i>live</i> follows the specification panel below: the sample, the way the smile is built, the surprise measure, the units of P/C and the standard errors.</p>
+
+<div class="specification" id="specification">
+<div class="title">Specification</div>
+<div class="controls">
+<label><span>Sample</span>
+<select id="control-sample"><option value="main" selected>2015&ndash;2019 (paper)</option><option value="extension">2020&ndash;Mar 2025</option></select></label>
+<label><span>Smile</span>
+<select id="control-smile"><option value="main" selected>&ge; 5 contracts, IV fit, close</option><option value="c1">&ge; 1 contract</option><option value="c20">&ge; 20 contracts</option><option value="settle">Settle prices</option><option value="priceerror">Premium-error fit</option></select></label>
+<label><span>Surprise</span>
+<select id="control-surprise"><option value="sue" selected>SUE (paper)</option><option value="alternative">SUE, 12-quarter scale</option></select></label>
+<label><span>P/C in</span>
+<select id="control-pc"><option value="contracts" selected>Contracts</option><option value="value">Notional value</option></select></label>
+<label><span>Standard errors</span>
+<select id="control-se"><option value="classical" selected>Classical (paper)</option><option value="clustered">Clustered by firm</option></select></label>
+</div>
+<div class="spec-summary" id="spec-summary">Loading&hellip;</div>
+</div>
+
+<h2>2. Data and method</h2>
+<h3>2.1 Announcements</h3>
+<p>The events are the first quarterly results announcements, from January 2015 to December 2019, of NSE shares whose stock futures traded and whose options traded on the announcement day. The announcement time comes from NSE's corporate announcement feed ("Financial Result Updates"); the time stamp in NSE's financial results API turned out to be that of the later structured filing, a median of one day and up to 576 days after the announcement. As in the paper (p.&nbsp;468), an announcement at or after 15:30 belongs to the next trading day, which is day 0, and announcements less than three trading days before the near-month expiry are dropped. On day 0 the absolute stock return averages 3.5%, against about 1.8% on the days around it, which confirms the dating. An event is kept when the option series expiring after the announcement has a fitted smile on day &minus;1: 2,072 events of 184 firms, against the paper's 2,081 of 191.</p>
+<h3>2.2 The volatility smile</h3>
+<p>For every stock and day I take the near-month options and the next month's, the futures price of the same expiry as the forward, and Black's (1976) formula with the IIMA risk-free rate. Options that traded fewer than five contracts that day stand in for the paper's five-minute filter; prices outside Black's arbitrage bounds are dropped; a stock-day needs at least seven options with at least one call and one put. A quadratic in call delta, IV = <i>a</i>&Delta;&sup2; + <i>b</i>&Delta; + <i>c</i>, is fitted by Nelder&ndash;Mead with weights equal to the log of traded value and the paper's constraints, which keep the curve above zero on [0, 1]. ATM-IV is the fitted IV at &Delta; = 0.5 and RR-IV = IV(0.25) &minus; IV(0.75). The robustness smile (Tables 8 and 9 of the paper) averages IV within moneyness buckets after Xing, Zhang and Zhao (2010). Daily closes of options and futures are not synchronous, which is the problem the paper's time-matched trades avoid, so RR-IV here is an approximation; the specification panel lets you tighten or loosen the liquidity filter, use settle prices or fit premium errors.</p>
+<h3>2.3 The surprise</h3>
+<p>SUE is actual EPS before extraordinary items less expected EPS, divided by the standard deviation of the previous eight quarters' surprises, with expected EPS from a seasonal random walk with drift (equations 2&ndash;4). EPS comes from NSE's standalone results filings (HTML before mid-2018, XBRL after), put on one share basis with NSE's split and bonus list. Each SUE needs 20 quarters of history, and NSE has no filing at all for 340 quarters, mostly in 2018, so 1,275 of the 2,072 events have a SUE, against 1,831 in the paper. The alternative in the panel divides by the standard deviation of year-on-year changes instead, which needs 12 quarters. The paper's second surprise measure, from IBES analyst forecasts, could not be rebuilt.</p>
+<h3>2.4 Volume and controls</h3>
+<p>O/S is the day's option turnover over the stock's turnover and O/F over the stock futures' turnover, all in notional rupees as NSE's bhavcopy reports them; P/C is put contracts over call contracts (or notional value, in the panel). The regression controls follow the paper where free data allow: a 60-month market-model beta on the NIFTY 500 total-return index, momentum from months <i>t</i>&minus;12 to <i>t</i>&minus;1, size as the log of market capitalisation in &#8377; million in the month before (shares from paid-up capital in the filings) and the buy-and-hold return from day &minus;10 to day &minus;2. Analyst coverage, analyst dispersion and institutional holding are dropped: there is no free source for them before 2021. All regression variables are winsorised at the 5th and 95th percentiles, as in the paper.</p>
+
+<h2>3. Results</h2>
+<h3>3.1 The worked example</h3>
+<p class="table-caption"><b>Table 1.</b> The paper's illustration (p.&nbsp;465): a one-week option on a share whose price after the announcement is a mixture of lognormals around 100, 110 and 90, each with 25% volatility. A 10% chance of a positive surprise tilts the smile up (RR-IV &gt; 0), a 10% chance of a negative one tilts it down. Recomputed here; every cell equals the paper's.</p>
+<div class="table-wrap"><table id="table-one"></table></div>
+
+<h3>3.2 The smile around the announcement <span class="note">(live)</span></h3>
+<figure>
+<div class="chart tall" id="chart-figure-1"></div>
+<figcaption><b>Figure 1.</b> Mean ATM-IV, IV(&Delta; = 0.75) and IV(&Delta; = 0.25) from ten trading days before to ten after the announcement, each divided by the stock's mean in the month before the announcement month (the paper's Figure 1).</figcaption>
+</figure>
+<p class="table-caption"><b>Table 2.</b> Mean smile levels in the month before, the month of and the month after the announcement (the paper's Table 5), with the paper's figures in grey. The <i>t</i>-statistics are Welch's test of a difference in means, with the paired test within events in brackets.</p>
+<div class="table-wrap"><table id="table-five"></table></div>
+
+<h3>3.3 The smile by surprise <span class="note">(live)</span></h3>
+<figure>
+<div class="chart" id="chart-figure-2"></div>
+<figcaption><b>Figure 2.</b> Normalised ATM-IV by SUE tercile (the paper's Figure 2b). The rise into the announcement is the same whatever the surprise.</figcaption>
+</figure>
+<figure>
+<div class="chart" id="chart-figure-3"></div>
+<figcaption><b>Figure 3.</b> RR-IV by SUE tercile (the paper's Figure 3b). Before the worst third of surprises the skew turns more negative: out-of-the-money puts get dearer. The grey points are read off the paper's chart for the large-negative tercile.</figcaption>
+</figure>
+<figure>
+<div class="chart" id="chart-figure-5"></div>
+<figcaption><b>Figure 4.</b> The put-to-call ratio by SUE tercile (the paper's Figure 5b). It rises most before large negative surprises.</figcaption>
+</figure>
+
+<h3>3.4 Option volume <span class="note">(live)</span></h3>
+<figure>
+<div class="chart" id="chart-figure-4"></div>
+<figcaption><b>Figure 5.</b> Options turnover relative to the stock (O/S) and to its futures (O/F) around the announcement (the paper's Figure 4). Grey points are read off the paper's charts.</figcaption>
+</figure>
+
+<h3>3.5 Descriptive statistics <span class="note">(live)</span></h3>
+<p class="table-caption"><b>Table 3.</b> Summary statistics of the winsorised regression variables (the paper's Table 3), with the paper's in grey.</p>
+<div class="table-wrap"><table id="table-three"></table></div>
+<p class="table-caption"><b>Table 4.</b> Correlation of each variable with SUE (the paper's Table 4).</p>
+<div class="table-wrap"><table id="table-four"></table></div>
+<p>The levels agree closely, with one exception the paper itself creates: its Table 3 gives P/C a mean of 0.124, while its Figure 5 shows levels between 0.44 and 0.56. P/C in contracts here matches the figure, so the table probably measures P/C differently.</p>
+
+<h3>3.6 Do the options predict the surprise? <span class="note">(live)</span></h3>
+<p>The paper regresses the surprise on RR-IV, P/C and ATM-IV <i>n</i> days before the announcement, with firm fixed effects and, in column (2), year-quarter effects (equation 5).</p>
+<p class="table-caption"><b>Table 5.</b> The paper's Tables 6 and 7 (smile from the quadratic fit) and 8 and 9 (moneyness buckets), SUE columns. Coefficients with standard errors or <i>t</i>-statistics beneath, as chosen in the panel; *** 1%, ** 5%, * 10%. The paper's figures are in grey.</p>
+<div class="table-wrap"><table id="table-regressions"></table></div>
+<p class="table-caption"><b>Table 6.</b> Every smile variant for 2015&ndash;2019 (static): column (2) of the paper's Table 6 and the main robustness rows. <i>t</i>-statistics are classical.</p>
+<div class="table-wrap"><table id="table-sensitivity"></table></div>
+<p>The skew and the put-to-call ratio predict the surprise one day before, and ATM-IV does not, in every variant. The skew's coefficient rises from 1.4 when single-contract options are allowed to 4.7 when only options with at least 20 contracts are used: noise from thinly traded options, priced at stale closes, dilutes it, which is the attenuation one would expect from daily data. In the main run the skew is significant on days &minus;2 and &minus;3 as well, which the paper does not find, but that does not survive either the stricter or the looser filter. Momentum predicts SUE strongly here and not in the paper; size and the pre-announcement return do the reverse.</p>
+
+<h2>4. Can it be traded?</h2>
+<p>The paper does not test a trading rule. Here each event is ranked, at the close of day &minus;1, against all events of the previous year by RR-IV, by minus P/C or by their average; the stock future is bought for the top third and sold for the bottom third, each position 2% of capital, and closed at the close of day 0 on the same contract. The backtest uses the shared engine with NSE futures costs (brokerage, securities transaction tax, stamp duty, exchange and SEBI charges, GST and 0.10% market impact a side, about 0.29% a round trip). Days without a trade count as zero.</p>
+<div class="specification" style="position:static">
+<div class="controls">
+<label><span>Signal</span>
+<select id="control-signal"><option value="RR-IV" selected>RR-IV</option><option value="P/C">P/C</option><option value="RR-IV and P/C">RR-IV and P/C</option></select></label>
+<label><span>Period</span>
+<select id="control-period"><option value="2015-2019" selected>2015&ndash;2019</option><option value="2020-Mar 2025">2020&ndash;Mar 2025</option></select></label>
+<label><span>Costs</span>
+<select id="control-costs"><option value="gross" selected>Before costs</option><option value="STT 0.01% (rate in force to Sep 2024)">After costs, STT 0.01%</option><option value="STT 0.05% (library default, 2026 rate)">After costs, STT 0.05%</option></select></label>
+</div>
+</div>
+<div class="stat-cards" id="trade-cards"></div>
+<figure>
+<div class="chart" id="chart-trade-growth"></div>
+<figcaption><b>Figure 6.</b> Growth of &#8377;1 in the chosen trading rule.</figcaption>
+</figure>
+<figure>
+<div class="chart short" id="chart-trade-drawdown"></div>
+<figcaption><b>Figure 7.</b> Drawdown from the previous peak.</figcaption>
+</figure>
+<p class="table-caption"><b>Table 7.</b> Every signal, period and cost setting. Per-trade returns before costs; annual returns compound the daily series; Newey-West <i>t</i>-statistics of the daily mean.</p>
+<div class="table-wrap"><table id="table-trading"></table></div>
+<p>Every version loses before costs. The reason is in the correlations: on the 2015&ndash;2019 events, RR-IV on day &minus;1 has a rank correlation of +0.16 with SUE, and SUE has +0.16 with the day-0 futures return, but RR-IV has &minus;0.05 with that return. Shares whose options look bullish have already risen, so the price at the close of day &minus;1 holds what the options know, and a little more. An independent review reproduced every number, found no look-ahead and showed the loss to be robust to exiting a day later, using spot prices, winsorising returns and full-sample cut-offs. The loss is statistically clear only for RR-IV in 2020&ndash;2025; the honest summary is that there is no edge.</p>
+
+<h2>5. After 2019</h2>
+<p>Choose 2020&ndash;Mar 2025 in the specification panel to see the extension (2,844 events, 898 with SUE). Option turnover is about five times larger relative to stock turnover than in 2015&ndash;2019, and implied volatility still jumps into the announcement, but the month-level rise is a third of the earlier one (0.007, <i>t</i> = 1.9), the skew no longer predicts the surprise (<i>t</i> = 1.0) and P/C does so only weakly (<i>t</i> = &minus;1.8). With far more retail option buying before earnings, the options market looks less like a channel for informed views about results.</p>
+
+<h2>6. What could not be reproduced, and where India differs</h2>
+<ul class="finding-list">
+<li><b>IBES.</b> The analyst-forecast surprise, analyst coverage and dispersion need IBES. Panel (a) of Figures 2, 3 and 5 and columns (3) and (4) of Tables 6 to 9 &mdash; 8 of the 16 regression columns &mdash; are not reproduced.</li>
+<li><b>Institutional holding.</b> NSE's shareholding API starts in September 2021 and BSE's refuses scripted requests, so this control is dropped.</li>
+<li><b>Tick data.</b> The smile is fitted to daily closes, not time-matched trades, so RR-IV is an approximation.</li>
+<li><b>SUE coverage.</b> NSE has no file for 340 quarterly filings, mostly in 2018; each gap removes SUE for 20 quarters.</li>
+<li><b>Unstated choices.</b> The paper does not say how its standard errors are computed, which R&sup2; it reports, whether its smile fit minimises price or volatility errors, or in what units P/C is measured. Each is a control on this page or documented in the code.</li>
+</ul>
+
+<h2>7. Conclusion</h2>
+<p>Free daily NSE data reproduce the paper's picture of uncertainty around Indian earnings announcements: volatility and option trading build up before the announcement and collapse after it, and on the eve of the announcement the options skew and the put-to-call ratio point to the sign of the coming surprise while the level of volatility does not. The evidence is strongest where the options are most liquid and weakest after 2019. For an investor, though, the options' foresight comes too late: by the close of the day before, the share price has already moved, and trading the signal loses money before costs. The study is therefore a description of how information reaches Indian markets around earnings, not a strategy.</p>
+
+<h2>Declarations</h2>
+<p><b>Conflicts of interest.</b> The author may hold positions in the securities and derivatives discussed. Nothing on this page is investment advice.</p>
+<p><b>Data and code availability.</b> The code, tests and derived results are at <a href="https://github.com/pramodathani/Research-Paper-Saurav-Agarwalla-Varma-Earnings-Options-Skew-India">github.com/pramodathani/Research-Paper-Saurav-Agarwalla-Varma-Earnings-Options-Skew-India</a>. Exchange data are downloaded by the code from NSE's public archives and are not redistributed.</p>
+<p><b>Funding.</b> None.</p>
+
+<h2>References</h2>
+<div class="references">
+<p>Black, F. (1976). The pricing of commodity contracts. <i>Journal of Financial Economics</i>, 3, 167&ndash;179.</p>
+<p>Berkman, H., and Truong, C. (2009). Event day 0? After-hours earnings announcements. <i>Journal of Accounting Research</i>, 47, 71&ndash;103.</p>
+<p>Jain, S., Agarwalla, S. K., Varma, J. R., and Pandey, A. (2019). Informed trading around earnings announcements&mdash;spot, futures, or options? <i>Journal of Futures Markets</i>, 39, 579&ndash;589.</p>
+<p>Jain, S., Varma, J. R., and Agarwalla, S. K. (2019). Indian equity options: smile, risk premiums, and efficiency. <i>Journal of Futures Markets</i>, 39, 150&ndash;163.</p>
+<p>Pan, J., and Poteshman, A. M. (2006). The information in option volume for future stock prices. <i>Review of Financial Studies</i>, 19, 871&ndash;908.</p>
+<p>Saurav, S., Agarwalla, S. K., and Varma, J. R. (2024). Asymmetric uncertainty around earnings announcements: evidence from options markets. <i>American Business Review</i>, 27(2), 459&ndash;487. https://doi.org/10.37625/abr.27.2.459-487</p>
+<p>Xing, Y., Zhang, X., and Zhao, R. (2010). What does the individual option volatility smirk tell us about future equity returns? <i>Journal of Financial and Quantitative Analysis</i>, 45, 641&ndash;662.</p>
+</div>
+
+<p class="footnote">Recreated from NSE's public F&amp;O and equity bhavcopies, corporate actions, results filings and announcements, niftyindices.com and the IIMA factor library. Page numbers refer to the journal's pages 459&ndash;487. The original paper is published under CC BY-NC.</p>
+
+</main>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
