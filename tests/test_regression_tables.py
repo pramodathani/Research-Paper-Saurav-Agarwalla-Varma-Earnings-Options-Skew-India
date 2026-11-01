@@ -51,6 +51,7 @@ class RegressionTablesTest(unittest.TestCase):
                 row[f'alt_atm_iv_{lag}'] = row[f'atm_iv_{lag}']
             rows.append(row)
         self.dataset = pandas.DataFrame(rows)
+        self.dataset['sue_alternative'] = -self.dataset['sue']
         self.tables = regression_tables.RegressionTables(self.dataset)
 
     def test_day_minus_one_signs_and_significance(self) -> None:
@@ -125,6 +126,27 @@ class RegressionTablesTest(unittest.TestCase):
                 'bhar',
             },
         )
+
+    def test_alternative_surprise_flips_every_coefficient(self) -> None:
+        """Checks all eight columns use the alternative surprise.
+
+        With the alternative surprise equal to minus SUE, every coefficient
+        must be exactly the negative of the SUE one.
+
+        Raises:
+            AssertionError: If any column still uses SUE.
+        """
+        main = self.tables.all_tables().set_index(
+            ['table', 'column', 'variable']
+        )
+        other = self.tables.all_tables('pc_contracts', 'sue_alternative')
+        other = other.set_index(['table', 'column', 'variable'])
+        for key in main.index:
+            self.assertAlmostEqual(
+                main.loc[key, 'coefficient'],
+                -other.loc[key, 'coefficient'],
+                places=8,
+            )
 
     def test_descriptive_tables(self) -> None:
         """Checks Table 3 counts and Table 4 symmetry and diagonal.

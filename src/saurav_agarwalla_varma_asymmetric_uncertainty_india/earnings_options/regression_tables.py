@@ -79,7 +79,11 @@ class RegressionTables:
         table_frame['lag'] = lag
         return table_frame
 
-    def all_tables(self, ratio: str = 'pc_contracts') -> pandas.DataFrame:
+    def all_tables(
+        self,
+        ratio: str = 'pc_contracts',
+        surprise: str = 'sue',
+    ) -> pandas.DataFrame:
         """Runs the SUE columns of Tables 6 to 9.
 
         Table 6 and Table 8 use n = 1 with and without year-quarter effects.
@@ -87,6 +91,7 @@ class RegressionTables:
 
         Args:
             ratio: The put-to-call variable, pc_contracts or pc_value.
+            surprise: The dependent variable, sue or sue_alternative.
 
         Returns:
             One tidy table for all columns.
@@ -97,7 +102,14 @@ class RegressionTables:
                 label = '(2)' if effect else '(1)'
                 pieces.append(
                     self.run_one(
-                        'Table 6', label, lag, 'rr_iv', 'atm_iv', ratio, effect
+                        'Table 6',
+                        label,
+                        lag,
+                        'rr_iv',
+                        'atm_iv',
+                        ratio,
+                        effect,
+                        surprise,
                     ),
                 )
                 pieces.append(
@@ -109,12 +121,20 @@ class RegressionTables:
                         'alt_atm_iv',
                         ratio,
                         effect,
+                        surprise,
                     ),
                 )
         for lag, label in [(2, 'n=2'), (3, 'n=3')]:
             pieces.append(
                 self.run_one(
-                    'Table 7', label, lag, 'rr_iv', 'atm_iv', ratio, True
+                    'Table 7',
+                    label,
+                    lag,
+                    'rr_iv',
+                    'atm_iv',
+                    ratio,
+                    True,
+                    surprise,
                 ),
             )
             pieces.append(
@@ -126,6 +146,7 @@ class RegressionTables:
                     'alt_atm_iv',
                     ratio,
                     True,
+                    surprise,
                 ),
             )
         return pandas.concat(pieces, ignore_index=True)

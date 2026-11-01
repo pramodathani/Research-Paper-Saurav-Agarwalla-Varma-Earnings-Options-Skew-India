@@ -154,4 +154,8 @@ class StudyRunner:
         tables = regression_tables.RegressionTables(dataset)
         results['tables_6_to_9'] = tables.all_tables()
         results['tables_6_to_9_pc_value'] = tables.all_tables('pc_value')
+        results['tables_6_to_9_sue_alternative'] = tables.all_tables(
+            'pc_contracts',
+            'sue_alternative',
+        )
         return results
