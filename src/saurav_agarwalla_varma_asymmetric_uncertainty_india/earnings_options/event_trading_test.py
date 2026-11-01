@@ -46,6 +46,7 @@ class EventTradingTest:
     SHORT_PERCENTILE = 1.0 / 3.0
     POSITION_SIZE = 0.02
     PERIODS_PER_YEAR = 250
+    LARGEST_PLAUSIBLE_MOVE = 0.5
 
     def __init__(
         self,
@@ -72,7 +73,10 @@ class EventTradingTest:
         """Finds each event's futures return from day -1 close to day 0 close.
 
         The same expiry's contract is used on both days, so the return is
-        a true price change and not a roll.
+        a true price change and not a roll. A move beyond 50 percent is
+        taken to be an unadjusted corporate action and left out, as with
+        IGL on 9 November 2017, whose future fell 80 percent while the
+        share fell 1 percent.
 
         Returns:
             One return per event, NaN where either price is missing.
@@ -88,8 +92,12 @@ class EventTradingTest:
             end = self.close.get((*key, row.day0))
             if start is None or end is None or start <= 0:
                 values.append(numpy.nan)
+                continue
+            change = end / start - 1.0
+            if abs(change) > self.LARGEST_PLAUSIBLE_MOVE:
+                values.append(numpy.nan)
             else:
-                values.append(end / start - 1.0)
+                values.append(change)
         return pandas.Series(values, index=self.events.index)
 
     def trailing_percentile(self, score: pandas.Series) -> pandas.Series:

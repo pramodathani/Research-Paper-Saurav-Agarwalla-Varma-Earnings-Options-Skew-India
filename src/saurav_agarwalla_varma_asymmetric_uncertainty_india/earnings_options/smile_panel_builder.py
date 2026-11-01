@@ -17,6 +17,7 @@ class SmilePanelBuilder:
     """Fits one smile per stock and day on the near-month series."""
 
     DAYS_PER_YEAR = 365.0
+    SERIES_PER_DAY = 2
 
     def __init__(
         self,
@@ -49,8 +50,11 @@ class SmilePanelBuilder:
     ) -> pandas.DataFrame:
         """Fits every stock-day of a normalised F&O table.
 
-        The series used on a day is the nearest expiry strictly after the
-        day that has a stock future that traded, which is the near month.
+        Each day gets a smile for the nearest expiry strictly after the day
+        that has a traded stock future, the near month (series_rank 1), and
+        for the next one (series_rank 2). Events use the series that expires
+        after the announcement, which is the next one when the near month
+        expires on or before day 0.
 
         Args:
             frame: Rows from the F&O reader for any set of days.
@@ -78,24 +82,27 @@ class SmilePanelBuilder:
             later = [expiry for expiry in candidates if expiry > date]
             if not later:
                 continue
-            expiry = later[0]
-            chain = group[group['expiry'] == expiry]
-            forward = future_prices[(date, symbol, expiry)]
-            chain = chain.assign(price=chain[self.price_field])
-            years = (expiry - date).days / self.DAYS_PER_YEAR
-            result = builder.build(chain, forward, years, rates.rate(date))
-            if result is None:
-                continue
-            result.update(
-                {
-                    'date': date,
-                    'symbol': symbol,
-                    'expiry': expiry,
-                    'forward': forward,
-                    'calendar_days_to_expiry': (expiry - date).days,
-                },
-            )
-            rows.append(result)
+            for rank, expiry in enumerate(later[: self.SERIES_PER_DAY]):
+                chain = group[group['expiry'] == expiry]
+                if chain.empty:
+                    continue
+                forward = future_prices[(date, symbol, expiry)]
+                chain = chain.assign(price=chain[self.price_field])
+                years = (expiry - date).days / self.DAYS_PER_YEAR
+                result = builder.build(chain, forward, years, rates.rate(date))
+                if result is None:
+                    continue
+                result.update(
+                    {
+                        'date': date,
+                        'symbol': symbol,
+                        'expiry': expiry,
+                        'series_rank': rank + 1,
+                        'forward': forward,
+                        'calendar_days_to_expiry': (expiry - date).days,
+                    },
+                )
+                rows.append(result)
         return pandas.DataFrame(rows)
 
     @staticmethod

@@ -37,7 +37,10 @@ class EventWindowBuilder:
             ratios: The stock-day volume ratio table.
         """
         self.calendar = calendar
+        if 'series_rank' not in smile.columns:
+            smile = smile.assign(series_rank=1)
         self.smile = smile
+        self.near = smile[smile['series_rank'] == 1]
         self.ratios = ratios
         self.base = self.monthly_base()
 
@@ -48,7 +51,7 @@ class EventWindowBuilder:
             A table indexed by symbol and month with the mean of each level
             and the number of days, for the normalisation of Table 2.
         """
-        frame = self.smile.assign(month=self.smile['date'].dt.to_period('M'))
+        frame = self.near.assign(month=self.near['date'].dt.to_period('M'))
         grouped = frame.groupby(['symbol', 'month'])
         base = grouped[list(self.LEVEL_COLUMNS)].mean()
         base.columns = [f'base_{name}' for name in base.columns]
@@ -89,6 +92,36 @@ class EventWindowBuilder:
             rows.append(frame)
         return pandas.concat(rows, ignore_index=True)
 
+    def attach_smile(self, table: pandas.DataFrame) -> pandas.DataFrame:
+        """Adds each day's smile, preferring the event's own series.
+
+        Args:
+            table: Event days with date, symbol and event_expiry.
+
+        Returns:
+            The table with the smile columns, the expiry used and
+            smile_series, which is 'event' or 'near'.
+        """
+        columns = ['date', 'symbol', 'expiry', *self.SMILE_COLUMNS]
+        own = table.merge(
+            self.smile[columns],
+            left_on=['date', 'symbol', 'event_expiry'],
+            right_on=['date', 'symbol', 'expiry'],
+            how='left',
+        )
+        near = table.merge(
+            self.near[columns],
+            on=['date', 'symbol'],
+            how='left',
+        )
+        has_own = own['atm_iv'].notna().to_numpy()
+        result = near.copy()
+        for name in ['expiry', *self.SMILE_COLUMNS]:
+            result[name] = numpy.where(has_own, own[name], near[name])
+        result['smile_series'] = numpy.where(has_own, 'event', 'near')
+        result.loc[result['atm_iv'].isna(), 'smile_series'] = ''
+        return result
+
     def build(
         self,
         events: pandas.DataFrame,
@@ -98,7 +131,10 @@ class EventWindowBuilder:
         """Builds the event-day table.
 
         Args:
-            events: Kept events with symbol, day0 and sue columns.
+            events: Kept events with symbol, day0, expiry and sue columns.
+                Each day uses the smile of the event's own series, which
+                expires after the announcement, while that series trades,
+                and the near-month smile after it has expired.
             first_offset: The first offset in trading days.
             last_offset: The last offset in trading days.
 
@@ -111,12 +147,19 @@ class EventWindowBuilder:
         )
         table = self.offset_dates(events, range(first_offset, last_offset + 1))
         table = table.dropna(subset=['date'])
+        columns = [
+            'event_id',
+            'symbol',
+            'day0',
+            'expiry',
+            'sue',
+            'sue_alternative',
+        ]
         table = table.merge(
-            events[['event_id', 'symbol', 'day0', 'sue', 'sue_alternative']],
+            events[columns].rename(columns={'expiry': 'event_expiry'}),
             on='event_id',
         )
-        smile = self.smile[['date', 'symbol', *self.SMILE_COLUMNS, 'expiry']]
-        table = table.merge(smile, on=['date', 'symbol'], how='left')
+        table = self.attach_smile(table)
         ratios = self.ratios[['date', 'symbol', *self.RATIO_COLUMNS]]
         table = table.merge(ratios, on=['date', 'symbol'], how='left')
         previous = table['day0'].dt.to_period('M') - 1

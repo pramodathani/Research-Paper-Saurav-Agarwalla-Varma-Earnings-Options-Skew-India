@@ -63,7 +63,7 @@ class StudyRunner:
         """Selects the events in the sample period that have a smile on day -1.
 
         The paper's sample is the announcements whose RR-IV one day before
-        the announcement exists, since its Table 3 has the same count for
+        the announcement exists on the series expiring after it, since its Table 3 has the same count for
         RR-IV, ATM-IV and P/C on that day.
 
         Returns:
@@ -80,15 +80,19 @@ class StudyRunner:
             date = self.inputs.calendar.shift(day_zero.date(), -1)
             before.append(None if date is None else pandas.Timestamp(date))
         events = events.assign(day_before=before)
-        smile = self.inputs.smile[['date', 'symbol']].assign(has_smile=True)
+        smile = self.inputs.smile[['date', 'symbol', 'expiry']].assign(
+            has_smile=True,
+        )
+        smile = smile.rename(columns={'expiry': 'smile_expiry'})
         merged = events.merge(
             smile,
-            left_on=['day_before', 'symbol'],
-            right_on=['date', 'symbol'],
+            left_on=['day_before', 'symbol', 'expiry'],
+            right_on=['date', 'symbol', 'smile_expiry'],
             how='left',
         )
         merged = merged[merged['has_smile'].fillna(False).astype(bool)]
-        return merged.drop(columns=['date', 'has_smile']).reset_index(drop=True)
+        merged = merged.drop(columns=['date', 'has_smile', 'smile_expiry'])
+        return merged.reset_index(drop=True)
 
     def run(self) -> dict[str, pandas.DataFrame]:
         """Runs every analysis.

@@ -88,6 +88,17 @@ class EventTradingTestTest(unittest.TestCase):
         test = SmallTest(self.frame, futures, self.calendar)
         self.assertTrue(pandas.isna(test.trade_returns()[0]))
 
+    def test_implausible_move_is_left_out(self) -> None:
+        """Checks an 80 percent fall, a missed corporate action, gives NaN.
+
+        Raises:
+            AssertionError: If the move is kept.
+        """
+        futures = self.futures.copy()
+        futures.loc[1, 'close'] = 20.0
+        test = SmallTest(self.frame, futures, self.calendar)
+        self.assertTrue(pandas.isna(test.trade_returns()[0]))
+
     def test_trailing_percentile_uses_only_earlier_events(self) -> None:
         """Checks event 4 ranks above the three earlier ones it can see.
 

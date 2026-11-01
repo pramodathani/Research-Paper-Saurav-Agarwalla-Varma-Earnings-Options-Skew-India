@@ -14,8 +14,11 @@ class MonthComparison:
         """Averages the smile levels over every share-month.
 
         Args:
-            smile: The stock-day smile panel.
+            smile: The stock-day smile panel; only the near-month series is
+                used.
         """
+        if 'series_rank' in smile.columns:
+            smile = smile[smile['series_rank'] == 1]
         frame = smile.assign(month=smile['date'].dt.to_period('M'))
         grouped = frame.groupby(['symbol', 'month'])
         self.means = grouped[list(self.PARAMETERS)].mean()

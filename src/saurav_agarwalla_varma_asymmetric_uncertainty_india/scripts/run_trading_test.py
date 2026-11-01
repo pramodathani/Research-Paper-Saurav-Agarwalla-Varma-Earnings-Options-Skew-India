@@ -64,11 +64,12 @@ class RunTradingTestApplication:
         )
         runner = study_runner.StudyRunner(inputs, '2014-01-01', '2025-03-31')
         events = runner.sample_events()
+        smile = inputs.smile[['date', 'symbol', 'expiry', 'rr_iv']].rename(
+            columns={'date': 'day_before', 'rr_iv': 'rr_iv_1'},
+        )
         events = events.merge(
-            pandas.read_parquet(derived / 'smile_main_2014_2025.parquet')[
-                ['date', 'symbol', 'rr_iv']
-            ].rename(columns={'date': 'day_before', 'rr_iv': 'rr_iv_1'}),
-            on=['day_before', 'symbol'],
+            smile,
+            on=['day_before', 'symbol', 'expiry'],
             how='left',
         )
         ratios = inputs.ratios[['date', 'symbol', 'pc_contracts']].rename(

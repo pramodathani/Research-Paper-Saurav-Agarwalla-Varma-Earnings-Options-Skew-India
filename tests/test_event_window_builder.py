@@ -58,6 +58,7 @@ class EventWindowBuilderTest(unittest.TestCase):
             {
                 'symbol': ['AAA'],
                 'day0': [self.day0],
+                'expiry': [pandas.Timestamp('2017-07-27')],
                 'sue': [0.7],
                 'sue_alternative': [0.6],
             },
@@ -135,6 +136,34 @@ class EventWindowBuilderTest(unittest.TestCase):
         self.events['day0'] = pandas.to_datetime(self.events['day0'])
         table = self.build()
         self.assertEqual(table['offset'].max(), 2)
+
+    def test_event_series_is_preferred_over_the_near_month(self) -> None:
+        """Checks the event's own series is used while it trades.
+
+        A second, near-month series with a different level is added for the
+        day before the event. The event's series (expiring 27 July) must be
+        used, and the near month on the day the event-series row is missing.
+
+        Raises:
+            AssertionError: If the wrong series is used.
+        """
+        before = self.day0 - pandas.offsets.BDay(1)
+        self.smile['series_rank'] = 2
+        near = self.smile.copy()
+        near['expiry'] = pandas.Timestamp('2017-06-29')
+        near['series_rank'] = 1
+        near['atm_iv'] = 0.99
+        near = near[near['date'] <= pandas.Timestamp('2017-06-29')]
+        own = self.smile[
+            self.smile['date'] != self.day0 + pandas.offsets.BDay(3)
+        ]
+        self.smile = pandas.concat([own, near], ignore_index=True)
+        table = self.build().set_index('offset')
+        self.assertAlmostEqual(table.loc[-1, 'atm_iv'], 0.36)
+        self.assertEqual(table.loc[-1, 'smile_series'], 'event')
+        self.assertEqual(before, table.loc[-1, 'date'])
+        self.assertEqual(table.loc[3, 'smile_series'], 'near')
+        self.assertAlmostEqual(table.loc[3, 'atm_iv'], 0.99)
 
     def test_ratios_and_surprise_are_carried(self) -> None:
         """Checks volume ratios and SUE are on every row.

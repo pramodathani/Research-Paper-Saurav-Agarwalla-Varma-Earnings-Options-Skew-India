@@ -116,7 +116,7 @@ class SmilePanelBuilderTest(unittest.TestCase):
         }
 
     def test_uses_the_nearest_later_expiry(self) -> None:
-        """Checks the near series is used before expiry and the far one on it.
+        """Checks the near series is rank 1 before expiry and the far one on it.
 
         Raises:
             AssertionError: If the wrong expiry is used.
@@ -127,9 +127,14 @@ class SmilePanelBuilderTest(unittest.TestCase):
             data += self.rows(date, 'AAA', self.FAR, 0.40)
         builder = smile_panel_builder.SmilePanelBuilder(pathlib.Path('.'))
         panel = builder.build_frame(pandas.DataFrame(data), FlatRates())
-        panel = panel.set_index('date')
+        second = panel[panel['series_rank'] == 2].set_index('date')
+        panel = panel[panel['series_rank'] == 1].set_index('date')
         before = panel.loc[pandas.Timestamp('2017-07-20')]
         on_expiry = panel.loc[pandas.Timestamp('2017-07-27')]
+        next_series = second.loc[pandas.Timestamp('2017-07-20')]
+        self.assertEqual(next_series['expiry'], self.FAR)
+        self.assertAlmostEqual(next_series['atm_iv'], 0.40, places=2)
+        self.assertNotIn(pandas.Timestamp('2017-07-27'), second.index)
         self.assertEqual(before['expiry'], self.NEAR)
         self.assertAlmostEqual(before['atm_iv'], 0.20, places=2)
         self.assertEqual(before['calendar_days_to_expiry'], 7)

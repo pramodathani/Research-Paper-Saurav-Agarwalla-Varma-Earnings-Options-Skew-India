@@ -66,6 +66,7 @@ class StudyRunnerTest(unittest.TestCase):
                     {
                         'symbol': symbol,
                         'day0': day0,
+                        'expiry': pandas.Timestamp('2030-01-31'),
                         'keep': True,
                         'sue': sue,
                         'sue_alternative': sue,
@@ -77,7 +78,7 @@ class StudyRunnerTest(unittest.TestCase):
                     {
                         'date': day,
                         'symbol': symbol,
-                        'expiry': day + pandas.Timedelta(days=20),
+                        'expiry': pandas.Timestamp('2030-01-31'),
                         'atm_iv': 0.30 + generator.normal(0.0, 0.02),
                         'iv_75': 0.31,
                         'iv_25': 0.29,
