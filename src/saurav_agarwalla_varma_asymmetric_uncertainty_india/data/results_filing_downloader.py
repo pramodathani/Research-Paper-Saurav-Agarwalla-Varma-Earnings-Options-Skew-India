@@ -3,6 +3,7 @@
 import json
 import pathlib
 import time
+from typing import ClassVar
 
 import requests
 
@@ -10,7 +11,7 @@ import requests
 class ResultsFilingDownloader:
     """Saves each results filing exactly as NSE served it."""
 
-    HEADERS = {
+    HEADERS: ClassVar[dict[str, str]] = {
         'User-Agent': (
             'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 '
             '(KHTML, like Gecko) Chrome/124 Safari/537.36'
