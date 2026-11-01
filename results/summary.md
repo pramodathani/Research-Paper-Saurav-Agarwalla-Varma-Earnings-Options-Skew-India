@@ -12,7 +12,7 @@ The paper's story holds up on free daily data.
 
 The recreation differs from the paper in three ways:
 
-1. **Days -2 and -3 also predict the surprise.** RR-IV is significant on those days too, where the paper finds nothing. So the signal is less concentrated on the last day than the paper reports.
+1. **Days -2 and -3 are less clear-cut.** In the main run RR-IV is significant on those days too, where the paper finds nothing. But it does not survive the stricter or looser liquidity filters in the sensitivity table, so the paper's finding that only day -1 matters is not overturned.
 2. **The years 2020 to March 2025 are different.** IV still builds up into earnings, but RR-IV no longer predicts the surprise and P/C only weakly.
 3. **The signal cannot be traded.** Going long or short the stock future from the day -1 close to the day 0 close on these signals loses money even before costs. The market has already priced what the options know.
 

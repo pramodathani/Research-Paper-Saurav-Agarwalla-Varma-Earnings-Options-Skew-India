@@ -39,7 +39,8 @@ Stars mark significance at 1% (\*\*\*), 5% (\*\*) and 10% (\*), from classical s
 1. **Uncertainty builds up before earnings and is resolved by them.** ATM-IV rises steadily from day -10 to day -1, 26% above its level in the month before, and drops sharply on day 0. IV at deltas 0.25 and 0.75 does the same. In the announcement month IV is 0.026 to 0.034 higher than in the months either side.
 2. **Option trading surges into the announcement.** O/S and O/F peak on day 0 at 1.97 and 0.80, against 1.21 and 0.43 ten days before.
 3. **The skew and the put-to-call ratio forecast the surprise; the level of IV does not.** Before the worst third of surprises, RR-IV falls to -0.017 on day -1 and P/C rises to 0.60 on day 0. ATM-IV rises in the same way whatever the surprise.
-4. **The signal starts earlier than the paper finds.** RR-IV also predicts SUE on days -2 and -3 here (coefficients 3.34 and 2.66), where the paper finds nothing.
+4. **Days -2 and -3 are less clear-cut than the paper says.** In the main run RR-IV also predicts SUE on days -2 and -3 (coefficients 3.34 and 2.66), where the paper finds nothing. But this does not survive the stricter or looser liquidity filters, so it does not overturn the paper's finding that the signal appears on day -1.
+7. **Liquidity matters.** Requiring at least 20 contracts a day strengthens the skew result (RR-IV 4.7, t 3.3). Allowing thinly traded options weakens it (1.4, t 1.6). This is what noise from daily closes would do.
 5. **It is not a trade.** The day -1 skew predicts the accounting surprise, but not the next day's price move. It even points slightly the wrong way (rank correlation -0.05), because the price has already moved. A long-short stock-futures trade on RR-IV, P/C or both loses 0.17-0.29% per trade before costs. A round trip costs about 0.29%.
 6. **After 2019 the effect fades.** In January 2020 to March 2025:
    - options volume is five times larger relative to stock volume;
