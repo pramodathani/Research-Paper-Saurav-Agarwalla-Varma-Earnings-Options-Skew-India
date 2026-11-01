@@ -23,11 +23,8 @@ class BuildDailyReturnsApplication:
             FileNotFoundError: If a derived store is missing.
         """
         data_folder = pathlib.Path('data')
-        symbols = set(
-            json.loads(
-                data_folder / 'derived' / 'futures_ranges.json'.read_text()
-            )
-        )
+        ranges_path = data_folder / 'derived' / 'futures_ranges.json'
+        symbols = set(json.loads(ranges_path.read_text()))
         pieces = []
         for year in range(2009, 2026):
             cash = pandas.read_parquet(
