@@ -99,7 +99,9 @@ class StudyRunner:
 
         Returns:
             A dictionary of result tables by name: events, windows,
-            table_1 is left to its own class, table_3, table_4, table_5,
+            table_1 is left to its own class, table_3 and table_4 on the
+            winsorised data used by the regressions (with raw versions),
+            table_5,
             figure_1, figure_2, figure_3, figure_4, figure_5 and
             tables_6_to_9.
         """
@@ -121,11 +123,17 @@ class StudyRunner:
             self.inputs.shares,
         ).build(events)
         statistics = descriptive_statistics.DescriptiveStatistics()
+        tables = regression_tables.RegressionTables(dataset)
+        winsorised = tables.dataset
         results = {
             'events': events,
             'dataset': dataset,
-            'table_3': statistics.summary(dataset),
-            'table_4': statistics.correlations(dataset).reset_index(
+            'table_3': statistics.summary(winsorised),
+            'table_3_raw': statistics.summary(dataset),
+            'table_4': statistics.correlations(winsorised).reset_index(
+                names='variable',
+            ),
+            'table_4_raw': statistics.correlations(dataset).reset_index(
                 names='variable',
             ),
             'table_5': month_comparison.MonthComparison(
@@ -155,7 +163,6 @@ class StudyRunner:
             series.insert(0, 'variable', column)
             figure_four.append(series)
         results['figure_4'] = pandas.concat(figure_four, ignore_index=True)
-        tables = regression_tables.RegressionTables(dataset)
         results['tables_6_to_9'] = tables.all_tables()
         results['tables_6_to_9_pc_value'] = tables.all_tables('pc_value')
         results['tables_6_to_9_sue_alternative'] = tables.all_tables(

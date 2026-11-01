@@ -28,7 +28,10 @@ class WriteComparisonTablesApplication:
                 'Table 3: summary statistics (pages 469-470)',
                 tables.table_three(),
             ),
-            ('Table 4: correlations with SUE (page 470)', tables.table_four()),
+            (
+                'Table 4: correlations with SUE, winsorised data (page 470)',
+                tables.table_four(),
+            ),
             ('Table 5: smile levels by month (page 471)', tables.table_five()),
             ('Figures 3 and 4: key points', tables.figure_points()),
             ('Tables 6 to 9, SUE columns (pages 479-482)', tables.regression()),
