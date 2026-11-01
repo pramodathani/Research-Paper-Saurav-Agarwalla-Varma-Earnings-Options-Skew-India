@@ -64,16 +64,10 @@ class FnoBhavcopyReader:
         frame = frame[frame['INSTRUMENT'].isin(['FUTSTK', 'OPTSTK'])].copy()
         result = pandas.DataFrame(
             {
-                'date': pandas.to_datetime(
-                    frame['TIMESTAMP'],
-                    format='%d-%b-%Y',
-                ),
+                'date': self.parse_date(frame['TIMESTAMP']),
                 'symbol': frame['SYMBOL'],
                 'kind': self.kind_labels(frame['INSTRUMENT'] == 'FUTSTK'),
-                'expiry': pandas.to_datetime(
-                    frame['EXPIRY_DT'],
-                    format='%d-%b-%Y',
-                ),
+                'expiry': self.parse_date(frame['EXPIRY_DT']),
                 'strike': pandas.to_numeric(frame['STRIKE_PR']),
                 'option_type': frame['OPTION_TYP'].where(
                     frame['INSTRUMENT'] == 'OPTSTK',
@@ -122,6 +116,19 @@ class FnoBhavcopyReader:
             },
         )
         return self.keep_traded(result)
+
+    def parse_date(self, text: pandas.Series) -> pandas.Series:
+        """Parses dates written with a four or two digit year.
+
+        Args:
+            text: Dates such as 13-JUL-2020 or 13-Jul-20.
+
+        Returns:
+            The dates as timestamps.
+        """
+        four = pandas.to_datetime(text, format='%d-%b-%Y', errors='coerce')
+        two = pandas.to_datetime(text, format='%d-%b-%y', errors='coerce')
+        return four.fillna(two)
 
     def keep_traded(self, frame: pandas.DataFrame) -> pandas.DataFrame:
         """Keeps the rows that traded and fixes the column order.

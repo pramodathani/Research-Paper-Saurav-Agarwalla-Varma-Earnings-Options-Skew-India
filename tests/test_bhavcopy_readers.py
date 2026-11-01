@@ -153,6 +153,22 @@ class BhavcopyReadersTest(unittest.TestCase):
         self.assertEqual(list(frame['symbol']), ['AAA'])
         self.assertEqual(frame['volume'].iloc[0], 7164403)
 
+    def test_two_digit_year_dates(self) -> None:
+        """Checks dates such as 13-Jul-20 are read in both readers.
+
+        Raises:
+            AssertionError: If a date is wrong.
+        """
+        cash = OLD_CASH.replace('14-JUL-2017', '13-Jul-20')
+        path = self.write_zip('cm13JUL2020bhav.csv.zip', cash)
+        frame = cash_bhavcopy_reader.CashBhavcopyReader().read(path)
+        self.assertEqual(str(frame['date'].iloc[0].date()), '2020-07-13')
+        fno = OLD_FNO.replace('14-JUL-2017', '13-Jul-20')
+        fno = fno.replace('27-Jul-2017', '30-Jul-20')
+        path = self.write_zip('fo13JUL2020bhav.csv.zip', fno)
+        frame = fno_bhavcopy_reader.FnoBhavcopyReader().read(path)
+        self.assertEqual(str(frame['expiry'].iloc[0].date()), '2020-07-30')
+
 
 if __name__ == '__main__':
     unittest.main()

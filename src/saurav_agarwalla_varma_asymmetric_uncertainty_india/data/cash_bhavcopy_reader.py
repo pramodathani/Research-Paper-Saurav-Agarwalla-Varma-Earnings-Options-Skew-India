@@ -59,10 +59,7 @@ class CashBhavcopyReader:
             frame = frame.assign(ISIN='')
         result = pandas.DataFrame(
             {
-                'date': pandas.to_datetime(
-                    frame['TIMESTAMP'],
-                    format='%d-%b-%Y',
-                ),
+                'date': self.parse_date(frame['TIMESTAMP']),
                 'symbol': frame['SYMBOL'],
                 'series': frame['SERIES'],
                 'isin': frame['ISIN'].fillna(''),
@@ -73,6 +70,19 @@ class CashBhavcopyReader:
             },
         )
         return result[list(self.COLUMNS)].reset_index(drop=True)
+
+    def parse_date(self, text: pandas.Series) -> pandas.Series:
+        """Parses dates written with a four or two digit year.
+
+        Args:
+            text: Dates such as 13-JUL-2020 or 13-Jul-20.
+
+        Returns:
+            The dates as timestamps.
+        """
+        four = pandas.to_datetime(text, format='%d-%b-%Y', errors='coerce')
+        two = pandas.to_datetime(text, format='%d-%b-%y', errors='coerce')
+        return four.fillna(two)
 
     def read_udiff(self, frame: pandas.DataFrame) -> pandas.DataFrame:
         """Normalises the UDiFF format used from 2024-07-08.
