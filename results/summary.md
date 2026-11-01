@@ -248,6 +248,7 @@ With fewer SUE observations and a retail-heavy options market, the evidence for 
   - Allowing single-contract options lowers it to 1.4 (t 1.6).
   - The moneyness-bucket Alt RR-IV is significant in every variant (t 2.9 to 4.2).
 - **The signal on days -2 and -3 is not robust.** It weakens with the strict filter (n = 3: t 1.3) and with the loose one (n = 2: t 1.2). The paper's finding that only day -1 matters is therefore not contradicted with confidence.
+- **Fitting premium errors keeps day -1 and raises it** (RR-IV 4.05, t 3.3), and it makes days -2 and -3 significant (t 2.9 and 2.6), as the main run does. So the day -2/-3 result depends on the filter, not on the fit.
 - **Settle prices change almost nothing,** because for options in the old bhavcopy the settle price equals the close.
 
 ## What could not be reproduced, and why
