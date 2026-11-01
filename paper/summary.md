@@ -178,7 +178,7 @@ IBES columns (3) and (4), which are not reproduced:
 - P/C: -0.575*** and -0.570***.
 - ATM-IV: -0.069 and -0.135.
 
-On page 479 the n = 1 P/C row places -0.575 in column 3 and -0.570 in column 4. The hand-over note has these two the other way round.
+On page 479 the n = 1 P/C row places -0.575 in column 3 and -0.570 in column 4.
 
 ### Table 7: n = 2 and 3, both with firm and year-quarter FE (page 480). SUE columns
 

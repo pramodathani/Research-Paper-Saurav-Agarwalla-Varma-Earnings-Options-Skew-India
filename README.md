@@ -147,7 +147,7 @@ S=src/saurav_agarwalla_varma_asymmetric_uncertainty_india/scripts
 ## Repository layout
 
 ```
-paper/        the paper (CC BY-NC), its summary, the literature and the hand-over note
+paper/        the paper (CC BY-NC), its summary and the literature
 plan/         the approved India plan
 src/saurav_agarwalla_varma_asymmetric_uncertainty_india/
   data/              readers and downloaders for NSE files, one class per source
