@@ -1,8 +1,10 @@
 {
-  "events": 2886,
-  "dataset": 2886,
+  "events": 2844,
+  "dataset": 2844,
   "table_3": 14,
+  "table_3_raw": 14,
   "table_4": 10,
+  "table_4_raw": 10,
   "table_5": 3,
   "figure_1": 63,
   "figure_2": 63,
@@ -11,5 +13,6 @@
   "figure_5_value": 63,
   "figure_4": 42,
   "tables_6_to_9": 56,
-  "tables_6_to_9_pc_value": 56
+  "tables_6_to_9_pc_value": 56,
+  "tables_6_to_9_sue_alternative": 56
 }
