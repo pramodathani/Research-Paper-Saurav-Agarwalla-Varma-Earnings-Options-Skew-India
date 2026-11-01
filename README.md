@@ -123,7 +123,9 @@ See `results/summary.md` for every reproduced table with the paper's numbers bes
 ```bash
 python3.14 -m venv .venv
 .venv/bin/pip install -e ".[test,figures]"
-.venv/bin/pip install -e ~/Projects/data-and-analytics --no-deps
+# Only the trading test needs the author's shared backtesting engine, data-and-analytics,
+# which is not on PyPI; every other step runs without it.
+.venv/bin/pip install -e path/to/data-and-analytics --no-deps
 .venv/bin/pytest -q
 
 S=src/saurav_agarwalla_varma_asymmetric_uncertainty_india/scripts
