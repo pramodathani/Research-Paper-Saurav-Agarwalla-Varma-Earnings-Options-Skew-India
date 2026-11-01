@@ -52,6 +52,11 @@ packages = [
 [tool.ruff]
 line-length = 80
 
+[tool.ruff.lint.per-file-ignores]
+"src/saurav_agarwalla_varma_asymmetric_uncertainty_india/earnings_options/paper_values.py" = [
+    "RUF012",
+]
+
 [tool.ruff.format]
 quote-style = "single"
 
